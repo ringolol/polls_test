@@ -18,9 +18,8 @@ from django.urls import path, include
 from rest_framework.documentation import include_docs_urls
 from rest_framework import routers
 
-from polls.views import active_polls, completed_polls_by_user, \
-        questions_by_poll, answers_by_question, submit_answers, add_poll, \
-        change_poll
+from polls.views.user_views import *
+from polls.views.admin_views import *
 
 
 

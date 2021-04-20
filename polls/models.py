@@ -3,7 +3,6 @@ from django.contrib.auth.models import User as AuthUser
 
 
 class User(models.Model):
-    # auth_user = models.ForeignKey(AuthUser, on_delete=models.CASCADE)
     session = models.CharField(max_length=200, unique=True)
 
 class Poll(models.Model):
