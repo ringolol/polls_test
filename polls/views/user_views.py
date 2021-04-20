@@ -12,6 +12,21 @@ from .utils import login_decorator, exception_response
 @login_decorator
 @api_view(['GET'])
 def active_polls(request):
+    """
+    Get active polls
+
+    Response example:
+    {
+        {
+            "poll_id": 1,
+            "name": "poll-1",
+            "start_date": 2020-04-24, 
+            "end_date": 2020-05-24, 
+            "description": "...",
+        },
+        ...
+    }
+    """
     today = datetime.date.today()
     active_polls = Poll.objects.filter(
         start_date__lte=today,
@@ -24,6 +39,23 @@ def active_polls(request):
 @login_decorator
 @api_view(['POST'])
 def completed_polls_by_user(request):
+    """
+    Get polls completed by user
+
+    Request example:
+    {
+        "user_id": 1
+    }
+
+    Response example:
+    {
+        {
+            "poll_id": 2,
+            "user_id": 1
+        },
+        ...
+    }
+    """
     requested_user_id = request.data.get('user_id', None)
     try:
         selected_user = User.objects.get(id=requested_user_id)
@@ -38,6 +70,25 @@ def completed_polls_by_user(request):
 @login_decorator
 @api_view(['POST'])
 def questions_by_poll(request):
+    """
+    Get all of the poll's questions
+
+    Request example:
+    {
+        "poll_id": 1
+    }
+
+    Response example:
+    {
+        {
+            "question_id": 1, 
+            "poll_id": 2,
+            "text": 1,
+            "many_answers": true,
+        },
+        ...
+    }
+    """
     requested_poll_id = request.data.get('poll_id', None)
     questions = Question.objects.select_related().filter(poll_id=requested_poll_id)
     
@@ -46,6 +97,25 @@ def questions_by_poll(request):
 @login_decorator
 @api_view(['POST'])
 def answers_by_question(request):
+    """
+    Get the question answers
+
+    Request example:
+    {
+        "question_id": 1
+    }
+
+    Response example:
+    {
+        {
+            "answer_id": 1, 
+            "question_id": 2,
+            "text": 1,
+        },
+        ...
+    }
+    """
+
     requested_question_id = request.data.get('question_id', None)
     answers = Answer.objects.filter(question_id=requested_question_id)
 
@@ -54,26 +124,32 @@ def answers_by_question(request):
 @login_decorator
 @api_view(['POST'])
 def submit_answers(request):
-    '''
+    """
+    Sumbit answers to the poll
+
+    Request example:
     {
         "poll_id": 1,
         "answered_questions": [
             { 
                 "question_id": 1, 
                 "answers": [ 
-                    {"answer_id": 1} 
+                    { "answer_id": 1 } 
                 ]
             },
             {
                 "question_id": 2, 
                 "answers": [ 
-                    {"answer_id": 4}, 
-                    {"answer_id": 5} 
+                    { "answer_id": 4 }, 
+                    { "answer_id": 5 } 
                 ]
             }
         ]
     }
-    '''
+
+    Response example:
+    {}
+    """
     poll_id = request.data.get('poll_id', None)
     answered_questions = request.data.get('answered_questions', [])
     

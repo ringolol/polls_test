@@ -22,9 +22,7 @@ from polls.views.user_views import *
 from polls.views.admin_views import *
 
 
-
 api_urlpatterns = [
-    # path('accounts/', include('rest_registration.api.urls')),
     path('active_polls/', active_polls),
     path('completed_polls_by_user/', completed_polls_by_user),
     path('questions_by_poll/', questions_by_poll),
@@ -32,6 +30,10 @@ api_urlpatterns = [
     path('submit_answers/', submit_answers),
     path('add_poll/', add_poll),
     path('change_poll/', change_poll),
+    path('delete_poll/', delete_poll),
+    path('add_question/', add_question),
+    path('change_question/', change_question),
+    path('delete_question/', delete_question)
 ]
 
 urlpatterns = [

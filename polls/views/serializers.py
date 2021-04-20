@@ -6,7 +6,7 @@ from polls.models import *
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'session']
+        fields = ['user_id', 'session']
 
 class PollSerializer(serializers.ModelSerializer):
     class Meta:
@@ -18,15 +18,15 @@ class CompletedPollSerializer(serializers.ModelSerializer):
         model = CompletedPoll
         poll = PollSerializer
         user = UserSerializer
-        fields = ['id', 'poll', 'user']
+        fields = ['poll_id', 'user_id']
 
 class QuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Question
-        fields = ['id', 'poll', 'text', 'many_answers']
+        fields = ['id', 'poll_id', 'text', 'many_answers']
 
 class AnswerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Answer
         question = QuestionSerializer
-        fields = ['id', 'question', 'text']
+        fields = ['id', 'question_id', 'text']

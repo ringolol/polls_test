@@ -1,8 +1,6 @@
 FROM python:3.8.3-alpine
 
 
-# RUN mkdir /code
-# RUN mkdir /code/staticfiles
 WORKDIR /code
 
 ENV PYTHONDONTWRITEBYTECODE 1
