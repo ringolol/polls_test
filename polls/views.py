@@ -5,7 +5,7 @@ import django
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.views import APIView
 from rest_framework import viewsets, serializers, status
 
@@ -40,27 +40,19 @@ class AnswerSerializer(serializers.ModelSerializer):
         question = QuestionSerializer
         fields = ['id', 'question', 'text']
 
+def login_decorator(fun):
+    def dec_fun(request, *args, **kwargs):
+        try:
+            _current_user = User.objects.get(session=request.session.session_key)
+        except User.DoesNotExist:
+            _current_user = User(
+                session=request.session.session_key
+            )
+            _current_user.save()
+        return fun(request, *args, **kwargs)
+    return dec_fun
 
-@api_view(['POST'])
-def login(request):
-    if not request.session.session_key:
-        request.session.save()
-
-    try:
-        current_user = User.objects.get(session=request.session.session_key)
-    except User.DoesNotExist:
-        current_user = None
-
-    if not current_user:
-        current_user = User(
-            session=request.session.session_key
-        )
-        current_user.save()
-
-    return Response({'id': current_user.id, 'session': request.session.session_key})
-    # serializer = UserSerializer(current_user)
-    # return Response(serializer.data)
-
+@login_decorator
 @api_view(['GET'])
 def active_polls(request):
     today = datetime.date.today()
@@ -72,6 +64,7 @@ def active_polls(request):
         PollSerializer(active_polls, many=True).data
     )
     
+@login_decorator
 @api_view(['POST'])
 def completed_polls_by_user(request):
     requested_user_id = request.data.get('user_id', None)
@@ -85,6 +78,7 @@ def completed_polls_by_user(request):
         CompletedPollSerializer(completed_polls, many=True).data
     )
 
+@login_decorator
 @api_view(['POST'])
 def questions_by_poll(request):
     requested_poll_id = request.data.get('poll_id', None)
@@ -95,6 +89,7 @@ def questions_by_poll(request):
     # print(answers)
     # return Response(AnswerSerializer(answers, many=True).data)
 
+@login_decorator
 @api_view(['POST'])
 def answers_by_question(request):
     requested_question_id = request.data.get('question_id', None)
@@ -102,6 +97,7 @@ def answers_by_question(request):
 
     return Response(AnswerSerializer(answers, many=True).data)
 
+@login_decorator
 @api_view(['POST'])
 def submit_answers(request):
     '''
@@ -212,3 +208,85 @@ def submit_answers(request):
             )
 
     return Response({})
+
+def str2date(string):
+    return datetime.datetime.strptime(string, "%m-%d-%Y").date()
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def add_poll(request):
+    try:
+        name = request.data['poll_name']
+        start_date = request.data['start_date']
+        end_date = request.data['end_date']
+        description = request.data['description']
+        poll = Poll(name=name, start_date=start_date, end_date=end_date, \
+                description=description)
+        poll.save()
+    except Exception as ex:
+        return Response(
+            {
+                "message": f'bad poll data: {request.data}',
+                "exception": str(ex)
+            }, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    return Response({})
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def change_poll(request):
+    try:
+        poll_id = request.data['poll_id']
+        updated_pars = request.data['updated_pars']
+        
+    except Exception as ex:
+        return Response(
+            {
+                "message": f'bad poll data: {request.data}',
+                "exception": str(ex)
+            }, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    if 'start_date' in updated_pars:
+        return Response({"message": "start_date cannot be changed after creation"})
+
+    try:
+        poll = Poll.objects.get(id=poll_id).update(**updated_pars)
+    except Exception as ex:
+        return Response(
+            {
+                "message": f'incorrect parameters in updated_pars: {updated_pars}',
+                "exception": str(ex)
+            }, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    return Response({})
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def delete_poll(request):
+    try:
+        poll_id = request.data['poll_id']
+    except Exception as ex:
+        return Response(
+            {
+                "message": f'bad poll data: {request.data}',
+                "exception": str(ex)
+            }, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    try:
+        poll = Poll.objects.get(id=poll_id).delete()
+    except Exception as ex:
+        return Response(
+            {
+                "message": f'poll {poll_id} does not exist',
+                "exception": str(ex)
+            }, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
