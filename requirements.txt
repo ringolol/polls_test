@@ -1,6 +1,7 @@
 django==2.2.10
 djangorestframework
-django-rest-registration
 coreapi
 pygments
 markdown
+gunicorn>=20.0.4
+psycopg2-binary>=2.8
