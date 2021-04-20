@@ -18,6 +18,10 @@ class QuestionAdmin(admin.ModelAdmin):
 class CompletedPollAdmin(admin.ModelAdmin):
     pass
 
+@admin.register(Answer)
+class AnswerAdmin(admin.ModelAdmin):
+    pass
+
 @admin.register(AsweredQuestion)
 class AsweredQuestionAdmin(admin.ModelAdmin):
     pass

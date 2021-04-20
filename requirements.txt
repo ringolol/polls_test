@@ -1,0 +1,6 @@
+django==2.2.10
+djangorestframework
+django-rest-registration
+coreapi
+pygments
+markdown

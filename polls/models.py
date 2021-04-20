@@ -1,20 +1,21 @@
 from django.db import models
+from django.contrib.auth.models import User as AuthUser
 
 
 class User(models.Model):
-    pass
+    # auth_user = models.ForeignKey(AuthUser, on_delete=models.CASCADE)
+    session = models.CharField(max_length=200, unique=True)
 
 class Poll(models.Model):
     name = models.CharField(max_length=200)
-    start_date = models.DateTimeField()
-    end_date = models.DateTimeField()
+    start_date = models.DateField()
+    end_date = models.DateField()
     description = models.CharField(max_length=200)
 
 class Question(models.Model):
     poll = models.ForeignKey(Poll, on_delete=models.CASCADE)
     text = models.CharField(max_length=200)
     many_answers = models.BooleanField()
-    answers = models.CharField(max_length=500)
 
 class CompletedPoll(models.Model):
     poll = models.ForeignKey(Poll, on_delete=models.CASCADE)
@@ -23,10 +24,14 @@ class CompletedPoll(models.Model):
     class Meta:
         unique_together = [['poll', 'user']]
 
-class AsweredQuestion(models.Model):
-    comp_poll = models.ForeignKey(CompletedPoll, on_delete=models.CASCADE)
+class Answer(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    answer = models.CharField(max_length=500)
+    text = models.CharField(max_length=200)
+
+class AsweredQuestion(models.Model):
+    completed_poll = models.ForeignKey(CompletedPoll, on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    answer = models.ForeignKey(Answer, on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = [['comp_poll', 'question']]
+        unique_together = [['completed_poll', 'question', 'answer']]
